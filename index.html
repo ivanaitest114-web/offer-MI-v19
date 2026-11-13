@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Telecom Offer & Comparison Hub</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2canvas for image export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { -webkit-tap-highlight-color: transparent; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-12">
+
+    <!-- Header -->
+    <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('overview')">
+                <div class="bg-white/10 p-2 rounded-xl">
+                    <i class="fa-solid fa-tower-cell text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold flex items-center gap-2">Offer & Pricing Intelligence Hub</h1>
+                    <p class="text-xs text-indigo-200">Multi-Operator Competitor Benchmarking & File Groups</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="downloadHTMLFile()" class="bg-indigo-700 hover:bg-indigo-800 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow transition flex items-center gap-1.5 border border-indigo-500" title="One-Click Download App HTML">
+                    <i class="fa-solid fa-download"></i> Download App
+                </button>
+                <button onclick="openOperatorModal()" class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow transition flex items-center gap-1.5 border border-slate-700" title="Manage Competitors">
+                    <i class="fa-solid fa-building-shield"></i> Manage Competitors
+                </button>
+                <button onclick="openFormModal()" class="bg-white text-indigo-600 hover:bg-indigo-50 px-3.5 py-2 rounded-xl text-xs font-bold shadow transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-plus"></i> Add Offer
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs for Companies -->
+    <nav class="bg-white border-b border-slate-200 shadow-sm sticky top-[69px] z-20">
+        <div id="navTabsContainer" class="max-w-7xl mx-auto px-4 flex overflow-x-auto space-x-2 py-2.5 no-scrollbar items-center">
+            <!-- Populated dynamically -->
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 pt-6 space-y-6">
+
+        <!-- OVERVIEW TAB CONTENT -->
+        <div id="content_overview" class="space-y-6">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-3">
+                <div class="relative w-full sm:w-80">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+                    <input type="text" id="searchInput" oninput="renderApp()" placeholder="Search data, file group, promo..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <div class="bg-slate-100 p-1 rounded-xl flex items-center gap-1">
+                        <button id="viewCardBtn" onclick="switchView('cards')" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-indigo-600 shadow-sm transition">
+                            <i class="fa-solid fa-grip mr-1"></i> Cards
+                        </button>
+                        <button id="viewTableBtn" onclick="switchView('table')" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition">
+                            <i class="fa-solid fa-table mr-1"></i> Table
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cards View Container (4 columns on large screens) -->
+            <div id="cardsViewContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+                <!-- Populated dynamically -->
+            </div>
+
+            <!-- Table View Container -->
+            <div id="tableViewContainer" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-100 text-xs text-slate-500 uppercase tracking-wider">
+                                <th class="p-3.5 font-semibold">Company</th>
+                                <th class="p-3.5 font-semibold">File / Group</th>
+                                <th class="p-3.5 font-semibold text-right">Original Fee</th>
+                                <th class="p-3.5 font-semibold text-right">Net Plan Fee</th>
+                                <th class="p-3.5 font-semibold">Local Data</th>
+                                <th class="p-3.5 font-semibold">Thereafter</th>
+                                <th class="p-3.5 font-semibold">GBA Data</th>
+                                <th class="p-3.5 font-semibold">Voice</th>
+                                <th class="p-3.5 font-semibold">China Voice</th>
+                                <th class="p-3.5 font-semibold">VAS</th>
+                                <th class="p-3.5 font-semibold">Promo</th>
+                                <th class="p-3.5 font-semibold">Admin Fee</th>
+                                <th class="p-3.5 font-semibold">Contract</th>
+                                <th class="p-3.5 font-semibold text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="divide-y divide-slate-100 text-sm">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- COMPANY INDIVIDUAL TABS CONTAINER -->
+        <div id="companyTabContainer" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div id="companyBadgeIcon" class="w-3.5 h-10 rounded-lg"></div>
+                    <div>
+                        <h2 id="companyTitleName" class="text-xl font-black text-slate-900">Company Name</h2>
+                        <p class="text-xs text-slate-400">Create or select an Offer File / Group below to organize & export</p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="openFileModal()" class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-folder-plus"></i> New File Group
+                    </button>
+                    <button onclick="exportCompanyCSV(activeTab)" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-file-csv"></i> Export All Company CSV
+                    </button>
+                    <button onclick="openFormModalForCompany()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> Add Offer
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-folder-open text-indigo-500"></i> Offer Files / Campaign Groups
+                    </span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-400 font-medium">Sort Offers:</span>
+                        <select id="companySortSelect" onchange="renderCompanyWorkspace(activeTab)" class="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="custom">Custom Order (Use Reorder Arrows)</option>
+                            <option value="newest">Newest Added</option>
+                            <option value="fee_asc">Net Fee: Low to High</option>
+                            <option value="fee_desc">Net Fee: High to Low</option>
+                            <option value="data_desc">Local Data: High to Low</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="companyFilesBar" class="flex flex-wrap items-center gap-2 pt-1"></div>
+            </div>
+
+            <div id="activeFileBanner" class="hidden bg-indigo-50/80 border border-indigo-200 p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm">
+                        <i class="fa-solid fa-file-lines text-base"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 id="activeFileNameTitle" class="font-bold text-slate-900 text-sm">File Name</h3>
+                            <span id="activeFileCountBadge" class="bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">0 offers</span>
+                        </div>
+                        <p class="text-xs text-slate-500">Viewing offers grouped inside this file</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <button onclick="exportFileCSV(activeTab, activeFileGroup)" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-file-csv"></i> Export File as CSV
+                    </button>
+                    <button onclick="deleteFileGroup(activeTab, activeFileGroup)" id="deleteFileBtn" class="bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 px-3 py-2 rounded-xl text-xs font-semibold transition" title="Delete File Group">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Offers Grid (4 columns on large screens) -->
+            <div id="companyOffersGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"></div>
+            <div id="companyEmptyState" class="hidden py-16 text-center text-slate-400 text-sm bg-white rounded-2xl border border-slate-100">
+                No offers recorded here yet. Click <strong>"New File Group"</strong> or <strong>"Add Offer"</strong> to get started!
+            </div>
+        </div>
+
+        <div id="emptyState" class="hidden py-16 text-center text-slate-400 text-sm">
+            No offers found matching your search.
+        </div>
+    </main>
+
+    <!-- New File Group Modal -->
+    <div id="fileModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-folder-plus text-indigo-600"></i> Create Offer File / Group
+                </h3>
+                <button onclick="closeFileModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-500">Group offers under <strong id="fileModalCompanyLabel" class="text-slate-800">Company</strong> into a dedicated file so you can export them together as one CSV.</p>
+            <form onsubmit="createFileGroup(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">File / Group Name</label>
+                    <input type="text" id="newFileNameInput" placeholder="e.g., 11.11 Campaign Offers" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold">
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeFileModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-xl text-sm transition">Cancel</button>
+                    <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-sm shadow transition">Create File</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Offer Add/Edit Modal -->
+    <div id="offerModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-xl space-y-5 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center">
+                <h3 id="modalTitle" class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-plus text-indigo-600"></i> Add Telecommunications Offer
+                </h3>
+                <button onclick="closeFormModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <form id="offerForm" onsubmit="saveOffer(event)" class="space-y-4">
+                <input type="hidden" id="offerId">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Company / Operator</label>
+                        <select id="inputCompany" onchange="populateFileGroupDropdown()" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">File / Campaign Group <span class="text-slate-400 font-normal">(Optional)</span></label>
+                        <input type="text" id="inputFileGroup" list="fileGroupSuggestions" placeholder="e.g., 11.11 Campaign (Optional)" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-indigo-700">
+                        <datalist id="fileGroupSuggestions"></datalist>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Original Plan Fee ($)</label>
+                        <textarea id="inputOriginalFee" rows="2" placeholder="e.g., $228" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Average Net Plan Fee ($)</label>
+                        <textarea id="inputNetFee" rows="2" placeholder="e.g., $111\n($80+$37 rebate)" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold bg-amber-50/50"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Contract Period</label>
+                        <textarea id="inputContract" rows="2" placeholder="e.g., 24 Mths" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Local Data Entitlement</label>
+                        <textarea id="inputLocalData" rows="2" placeholder="e.g., 50GB" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Thereafter Local Data</label>
+                        <textarea id="inputThereafter" rows="2" placeholder="e.g., 1 Mbps" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">GBA Data</label>
+                        <textarea id="inputGbaData" rows="2" placeholder="e.g., 3GB" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Local Voice Minutes</label>
+                        <textarea id="inputLocalVoice" rows="2" placeholder="e.g., 3000 mins" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">China Roaming Voice</label>
+                        <textarea id="inputChinaVoice" rows="2" placeholder="e.g., -" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Admin Fee</label>
+                        <textarea id="inputAdminFee" rows="2" placeholder="e.g., Waived" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">VAS (Value Added Services)</label>
+                        <textarea id="inputVas" rows="3" placeholder="e.g., +$48/month 40GB WORLD Pass" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Promo / Offer</label>
+                        <textarea id="inputPromo" rows="3" placeholder="e.g., 50GB Local Data" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Gift</label>
+                        <textarea id="inputGift" rows="3" placeholder="e.g., Free E-Voucher" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                </div>
+
+                <div class="pt-3 flex gap-3">
+                    <button type="button" onclick="closeFormModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-xl text-sm transition">Cancel</button>
+                    <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-xl text-sm shadow transition">Save Offer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Manage Competitors Modal -->
+    <div id="operatorModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-xl space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-building-shield text-indigo-600"></i> Manage Competitors & Color Tags
+                </h3>
+                <button onclick="closeOperatorModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-500">Add new competitor brands, rename existing ones, or customize their badge color tags.</p>
+            
+            <div id="operatorListContainer" class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                <!-- Populated dynamically -->
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 space-y-3">
+                <div class="text-xs font-bold text-slate-700">Add New Competitor</div>
+                <div class="flex gap-2">
+                    <input type="text" id="newOpName" placeholder="Operator Name (e.g. 3HK)" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <select id="newOpColor" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="bg-red-500">Red</option>
+                        <option value="bg-yellow-400">Yellow</option>
+                        <option value="bg-sky-400">Light Blue</option>
+                        <option value="bg-indigo-600">Indigo</option>
+                        <option value="bg-pink-500">Pink</option>
+                        <option value="bg-orange-500">Orange</option>
+                        <option value="bg-emerald-500">Emerald</option>
+                        <option value="bg-purple-500">Purple</option>
+                        <option value="bg-slate-700">Dark Slate</option>
+                    </select>
+                    <button onclick="addNewOperator()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow transition whitespace-nowrap">Add</button>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-2">
+                <button type="button" onclick="closeOperatorModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-xl text-xs transition">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Logic -->
+    <script>
+        const defaultOperators = [
+            { name: "Smartone", color: "bg-red-500" },
+            { name: "CSL GoChill", color: "bg-yellow-400" },
+            { name: "CMHK s/ash", color: "bg-sky-400" },
+            { name: "MO+", color: "bg-pink-500" },
+            { name: "SunMobile", color: "bg-orange-500" }
+        ];
+
+        let operators = JSON.parse(localStorage.getItem('telecom_operators_v1')) || defaultOperators;
+        let currentView = 'cards';
+        let activeTab = 'overview';
+        let activeFileGroup = 'ALL';
+
+        let companyFileGroups = JSON.parse(localStorage.getItem('telecom_file_groups_v2')) || {
+            "Smartone": [],
+            "CSL GoChill": [],
+            "CMHK s/ash": ["11.11 Campaign"],
+            "MO+": ["5G Flagship Series"],
+            "SunMobile": []
+        };
+
+        let offers = JSON.parse(localStorage.getItem('telecom_offers_v4')) || [
+            {
+                id: 1,
+                company: "CMHK s/ash",
+                fileGroup: "11.11 Campaign",
+                originalFee: "$228",
+                netFee: "$111<br><span class='text-xs font-normal text-slate-500'>($80+$37 monthly rebate)</span>",
+                contract: "24 Mths",
+                localData: "50GB",
+                thereafter: "1 Mbps",
+                gbaData: "3GB",
+                localVoice: "3000 mins",
+                chinaVoice: "-",
+                vas: "- +$48/month 40GB WORLD Pass - Asia Pacific",
+                promo: "- 50GB Local Data<br>- First 11 mths: 11GB GBA",
+                adminFee: "Waived"
+            },
+            {
+                id: 2,
+                company: "CMHK s/ash",
+                fileGroup: "11.11 Campaign",
+                originalFee: "$298",
+                netFee: "$148",
+                contract: "24 Mths",
+                localData: "100GB",
+                thereafter: "5 Mbps",
+                gbaData: "10GB",
+                localVoice: "Unlimited",
+                chinaVoice: "200 mins",
+                vas: "Free 12mth Cloud Storage",
+                promo: "Waived Admin Fee + $200 Coupon",
+                adminFee: "Waived"
+            },
+            {
+                id: 3,
+                company: "MO+",
+                fileGroup: "5G Flagship Series",
+                originalFee: "$288",
+                netFee: "$188",
+                contract: "24 Mths",
+                localData: "120GB",
+                thereafter: "5 Mbps",
+                gbaData: "15GB",
+                localVoice: "10,000 mins",
+                chinaVoice: "500 mins",
+                vas: "Roam Like Home Included",
+                promo: "MagSafe Powerbank",
+                adminFee: "Waived"
+            }
+        ];
+
+        function syncStorage() {
+            try {
+                offers.forEach(function(o) {
+                    if (!companyFileGroups[o.company]) companyFileGroups[o.company] = [];
+                    if (o.fileGroup && o.fileGroup.trim() !== "" && !companyFileGroups[o.company].includes(o.fileGroup.trim())) {
+                        companyFileGroups[o.company].push(o.fileGroup.trim());
+                    }
+                });
+                localStorage.setItem('telecom_offers_v4', JSON.stringify(offers));
+                localStorage.setItem('telecom_file_groups_v2', JSON.stringify(companyFileGroups));
+                localStorage.setItem('telecom_operators_v1', JSON.stringify(operators));
+            } catch(e) {
+                console.error("Storage error:", e);
+            }
+        }
+
+        function moveOffer(id, direction) {
+            const idx = offers.findIndex(function(item) { return item.id === id; });
+            if (idx === -1) return;
+            const newIdx = idx + direction;
+            if (newIdx < 0 || newIdx >= offers.length) return;
+            
+            const temp = offers[idx];
+            offers[idx] = offers[newIdx];
+            offers[newIdx] = temp;
+            
+            syncStorage();
+            if (activeTab === 'overview') {
+                renderApp();
+            } else {
+                renderCompanyWorkspace(activeTab);
+            }
+        }
+
+        function renderNavTabs() {
+            const nav = document.getElementById('navTabsContainer');
+            if (!nav) return;
+            nav.innerHTML = '';
+
+            const overviewBtn = document.createElement('button');
+            overviewBtn.type = 'button';
+            overviewBtn.onclick = function() { switchTab('overview'); };
+            overviewBtn.id = 'tab_overview';
+            overviewBtn.className = activeTab === 'overview'
+                ? "px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap bg-indigo-600 text-white shadow-sm flex items-center gap-2"
+                : "px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-2";
+            overviewBtn.innerHTML = '<i class="fa-solid fa-globe"></i> All Overview & Matrix';
+            nav.appendChild(overviewBtn);
+
+            operators.forEach(function(op) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.onclick = function() { switchTab(op.name); };
+                btn.id = 'tab_' + op.name;
+                const isSelected = activeTab === op.name;
+                btn.className = isSelected
+                    ? "px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap bg-indigo-600 text-white shadow-sm flex items-center gap-2"
+                    : "px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-2";
+                btn.innerHTML = '<span class="w-2.5 h-2.5 rounded-full ' + op.color + ' inline-block"></span> ' + op.name;
+                nav.appendChild(btn);
+            });
+        }
+
+        function switchTab(tab) {
+            activeTab = tab;
+            activeFileGroup = 'ALL';
+            renderNavTabs();
+
+            const overviewEl = document.getElementById('content_overview');
+            const companyContainer = document.getElementById('companyTabContainer');
+
+            if (tab === 'overview') {
+                if(overviewEl) overviewEl.classList.remove('hidden');
+                if(companyContainer) companyContainer.classList.add('hidden');
+                renderApp();
+            } else {
+                if(overviewEl) overviewEl.classList.add('hidden');
+                if(companyContainer) companyContainer.classList.remove('hidden');
+                renderCompanyWorkspace(tab);
+            }
+        }
+
+        function selectFileGroup(fileName) {
+            activeFileGroup = fileName;
+            renderCompanyWorkspace(activeTab);
+        }
+
+        function switchView(view) {
+            currentView = view;
+            const cardsContainer = document.getElementById('cardsViewContainer');
+            const tableContainer = document.getElementById('tableViewContainer');
+            const cardBtn = document.getElementById('viewCardBtn');
+            const tableBtn = document.getElementById('viewTableBtn');
+
+            if (view === 'cards') {
+                if(cardsContainer) cardsContainer.classList.remove('hidden');
+                if(tableContainer) tableContainer.classList.add('hidden');
+                if(cardBtn) cardBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-indigo-600 shadow-sm transition";
+                if(tableBtn) tableBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition";
+            } else {
+                if(cardsContainer) cardsContainer.classList.add('hidden');
+                if(tableContainer) tableContainer.classList.remove('hidden');
+                if(tableBtn) tableBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-white text-indigo-600 shadow-sm transition";
+                if(cardBtn) cardBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition";
+            }
+            renderApp();
+        }
+
+        function renderApp() {
+            syncStorage();
+            renderNavTabs();
+            const searchInput = document.getElementById('searchInput');
+            const query = searchInput ? searchInput.value.toLowerCase() : '';
+            
+            const filtered = offers.filter(function(o) { 
+                return o.company.toLowerCase().includes(query) ||
+                (o.fileGroup && o.fileGroup.toLowerCase().includes(query)) ||
+                (o.promo && o.promo.toLowerCase().includes(query)) ||
+                o.localData.toLowerCase().includes(query) ||
+                o.netFee.toLowerCase().includes(query);
+            });
+
+            const cardsContainer = document.getElementById('cardsViewContainer');
+            const tableBody = document.getElementById('tableBody');
+            const emptyState = document.getElementById('emptyState');
+
+            if(cardsContainer) cardsContainer.innerHTML = '';
+            if(tableBody) tableBody.innerHTML = '';
+
+            if (filtered.length === 0) {
+                if(emptyState) emptyState.classList.remove('hidden');
+                return;
+            } else {
+                if(emptyState) emptyState.classList.add('hidden');
+            }
+
+            filtered.forEach(function(o) {
+                if(cardsContainer) cardsContainer.appendChild(createOfferCardElement(o));
+
+                if(tableBody) {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50/80 transition border-b border-slate-50 text-xs";
+                    const opObj = operators.find(function(op) { return op.name === o.company; }) || { color: 'bg-indigo-500' };
+                    const fileBadge = o.fileGroup
+                        ? '<span class="bg-slate-100 text-slate-700 font-semibold px-2 py-0.5 rounded text-xs"><i class="fa-solid fa-folder text-amber-500 mr-1"></i>' + o.fileGroup + '</span>'
+                        : '<span class="text-slate-400 italic">-</span>';
+
+                    tr.innerHTML = '<td class="p-3.5"><span class="bg-slate-50 text-slate-900 font-bold px-2.5 py-1 rounded-lg text-xs inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full ' + opObj.color + '"></span>' + o.company + '</span></td>' +
+                        '<td class="p-3.5">' + fileBadge + '</td>' +
+                        '<td class="p-3.5 text-right font-medium text-slate-500 line-through">' + o.originalFee + '</td>' +
+                        '<td class="p-3.5 text-right font-black text-indigo-600 bg-amber-50/40">' + o.netFee + '</td>' +
+                        '<td class="p-3.5 font-semibold text-slate-800">' + o.localData + '</td>' +
+                        '<td class="p-3.5 text-slate-600">' + (o.thereafter || '-') + '</td>' +
+                        '<td class="p-3.5 text-slate-600">' + (o.gbaData || '-') + '</td>' +
+                        '<td class="p-3.5 text-slate-600">' + o.localVoice + '</td>' +
+                        '<td class="p-3.5 text-slate-600">' + (o.chinaVoice || '-') + '</td>' +
+                        '<td class="p-3.5 text-slate-600">' + (o.vas || '-') + '</td>' +
+                        '<td class="p-3.5 text-slate-600">' + (o.promo || '-') + '</td>' +
+                        '<td class="p-3.5 text-slate-600">' + (o.adminFee || '-') + '</td>' +
+                        '<td class="p-3.5 font-semibold text-slate-800">' + (o.contract || '-') + '</td>' +
+                        '<td class="p-3.5 text-center">' +
+                            '<div class="flex items-center justify-center gap-1">' +
+                                '<button type="button" onclick="editOffer(' + o.id + ')" class="text-slate-400 hover:text-indigo-600 p-1.5 rounded-lg" title="Edit"><i class="fa-solid fa-pen text-xs"></i></button>' +
+                                '<button type="button" onclick="deleteOffer(' + o.id + ')" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg" title="Delete"><i class="fa-solid fa-trash-can text-xs"></i></button>' +
+                            '</div>' +
+                        '</td>';
+                    tableBody.appendChild(tr);
+                }
+            });
+        }
+
+        function parseNumericValue(str) {
+            if (!str) return 0;
+            const stripped = str.replace(/<[^>]*>?/gm, '');
+            const match = stripped.match(/(\d+(\.\d+)?)/);
+            return match ? parseFloat(match[1]) : 0;
+        }
+
+        function renderCompanyWorkspace(companyName) {
+            syncStorage();
+            const grid = document.getElementById('companyOffersGrid');
+            const empty = document.getElementById('companyEmptyState');
+            const titleEl = document.getElementById('companyTitleName');
+            const badgeIcon = document.getElementById('companyBadgeIcon');
+            const filesBar = document.getElementById('companyFilesBar');
+            const activeFileBanner = document.getElementById('activeFileBanner');
+
+            if(titleEl) titleEl.innerText = companyName;
+            const opObj = operators.find(function(op) { return op.name === companyName; }) || { color: 'bg-indigo-500' };
+            if(badgeIcon) badgeIcon.className = 'w-3.5 h-10 rounded-lg ' + opObj.color;
+
+            const allCompanyOffers = offers.filter(function(o) { return o.company === companyName; });
+            const groups = companyFileGroups[companyName] || [];
+
+            if(filesBar) filesBar.innerHTML = '';
+            
+            if(filesBar) {
+                const allBtn = document.createElement('button');
+                allBtn.type = 'button';
+                allBtn.onclick = function() { selectFileGroup('ALL'); };
+                allBtn.className = activeFileGroup === 'ALL'
+                    ? "px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-sm transition flex items-center gap-1.5"
+                    : "px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition flex items-center gap-1.5";
+                allBtn.innerHTML = '<i class="fa-solid fa-layer-group"></i> All Offers (' + allCompanyOffers.length + ')';
+                filesBar.appendChild(allBtn);
+
+                groups.forEach(function(g) {
+                    const count = allCompanyOffers.filter(function(o) { return o.fileGroup === g; }).length;
+                    const isSelected = activeFileGroup === g;
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.onclick = function() { selectFileGroup(g); };
+                    btn.className = isSelected
+                        ? "px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-sm transition flex items-center gap-2"
+                        : "px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-50 border border-slate-200 text-slate-700 hover:bg-indigo-50 hover:border-indigo-200 transition flex items-center gap-2";
+                    btn.innerHTML = '<i class="fa-solid ' + (isSelected ? 'fa-folder-open text-amber-300' : 'fa-folder text-amber-500') + '"></i> <span>' + g + '</span> <span class="' + (isSelected ? 'bg-indigo-500 text-white' : 'bg-slate-200 text-slate-600') + ' px-1.5 py-0.5 rounded-md text-[10px]">' + count + '</span>';
+                    filesBar.appendChild(btn);
+                });
+
+                if (groups.length === 0) {
+                    const hint = document.createElement('span');
+                    hint.className = "text-xs text-slate-400 italic ml-2";
+                    hint.innerText = "No file groups created yet — click 'New File Group' to organize offers into folders.";
+                    filesBar.appendChild(hint);
+                }
+            }
+
+            let displayedOffers = activeFileGroup === 'ALL'
+                ? [].concat(allCompanyOffers)
+                : allCompanyOffers.filter(function(o) { return o.fileGroup === activeFileGroup; });
+
+            const sortSelect = document.getElementById('companySortSelect');
+            const sortVal = sortSelect ? sortSelect.value : 'custom';
+            if (sortVal === 'fee_asc') {
+                displayedOffers.sort(function(a, b) { return (parseNumericValue(a.netFee) || 999999) - (parseNumericValue(b.netFee) || 999999); });
+            } else if (sortVal === 'fee_desc') {
+                displayedOffers.sort(function(a, b) { return parseNumericValue(b.netFee) - parseNumericValue(a.netFee); });
+            } else if (sortVal === 'data_desc') {
+                displayedOffers.sort(function(a, b) { return parseNumericValue(b.localData) - parseNumericValue(a.localData); });
+            } else if (sortVal === 'newest') {
+                displayedOffers.sort(function(a, b) { return b.id - a.id; });
+            }
+
+            if (activeFileGroup !== 'ALL') {
+                if(activeFileBanner) activeFileBanner.classList.remove('hidden');
+                const titleNode = document.getElementById('activeFileNameTitle');
+                const countNode = document.getElementById('activeFileCountBadge');
+                if(titleNode) titleNode.innerText = activeFileGroup;
+                if(countNode) countNode.innerText = displayedOffers.length + ' offer' + (displayedOffers.length === 1 ? '' : 's');
+            } else {
+                if(activeFileBanner) activeFileBanner.classList.add('hidden');
+            }
+
+            if(grid) grid.innerHTML = '';
+            if (displayedOffers.length === 0) {
+                if(empty) empty.classList.remove('hidden');
+            } else {
+                if(empty) empty.classList.add('hidden');
+                displayedOffers.forEach(function(o) {
+                    if(grid) grid.appendChild(createOfferCardElement(o));
+                });
+            }
+        }
+
+        function createOfferCardElement(o) {
+            const opObj = operators.find(function(op) { return op.name === o.company; }) || { color: 'bg-indigo-500' };
+            
+            const cardId = 'exportable_card_' + o.id;
+            const exportLabel = o.fileGroup ? (o.company + '_' + o.fileGroup + '_' + o.localData) : (o.company + '_' + o.localData);
+            const fileBadgeHtml = o.fileGroup
+                ? '<span class="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-md truncate" title="File Group"><i class="fa-solid fa-folder text-amber-500 mr-1"></i>' + o.fileGroup + '</span>'
+                : '<span class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Offer Summary</span>';
+
+            const div = document.createElement('div');
+            div.className = "bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col justify-between hover:shadow-md transition";
+            
+            div.innerHTML = '<div id="' + cardId + '" class="p-5 bg-white space-y-3">' +
+                    '<div class="flex justify-between items-center pb-2 border-b border-slate-100 gap-2">' +
+                        '<span class="bg-slate-50 text-slate-900 font-bold px-2.5 py-1 rounded-lg text-xs inline-flex items-center gap-1.5 shrink-0"><span class="w-2 h-2 rounded-full ' + opObj.color + '"></span>' + o.company + '</span>' +
+                        '<div class="flex items-center gap-1">' +
+                            '<button type="button" class="move-left-btn bg-slate-100 hover:bg-indigo-100 hover:text-indigo-700 text-slate-600 w-6 h-6 rounded-lg text-xs font-bold transition flex items-center justify-center shadow-sm" title="Move Left / Earlier"><i class="fa-solid fa-chevron-left text-[10px]"></i></button>' +
+                            '<button type="button" class="move-right-btn bg-slate-100 hover:bg-indigo-100 hover:text-indigo-700 text-slate-600 w-6 h-6 rounded-lg text-xs font-bold transition flex items-center justify-center shadow-sm" title="Move Right / Later"><i class="fa-solid fa-chevron-right text-[10px]"></i></button>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="flex justify-between items-center text-xs px-1">' +
+                        fileBadgeHtml +
+                    '</div>' +
+                    '<div class="border border-slate-300 rounded-xl overflow-hidden text-xs">' +
+                        '<div class="grid grid-cols-2 border-b border-slate-300">' +
+                            '<div class="p-2 border-r border-slate-300 font-semibold text-slate-600 bg-slate-50 flex items-center">Original Plan Fee</div>' +
+                            '<div class="p-2 text-center font-medium text-slate-500 line-through flex items-center justify-center">' + o.originalFee + '</div>' +
+                        '</div>' +
+                        '<div class="grid grid-cols-2 border-b border-slate-300 bg-amber-50/60">' +
+                            '<div class="p-2 border-r border-slate-300 font-bold text-slate-900 flex items-center">Average Net plan Fee</div>' +
+                            '<div class="p-2 text-center font-black text-indigo-700 text-sm flex flex-col items-center justify-center">' + o.netFee + '</div>' +
+                        '</div>' +
+                        '<div class="grid grid-cols-2 border-b border-slate-300">' +
+                            '<div class="p-2 border-r border-slate-300 font-semibold text-slate-600 bg-slate-50 flex items-center">Local Data Entitlement</div>' +
+                            '<div class="p-2 text-center font-bold text-slate-800 flex items-center justify-center">' + o.localData + '</div>' +
+                        '</div>' +
+                        '<div class="grid grid-cols-2 border-b border-slate-300">' +
+                            '<div class="p-2 border-r border-slate-300 font-semibold text-slate-600 bg-slate-50 flex items-center">Thereafter Local</div>' +
+                            '<div class="p-2 text-center text-slate-700 flex items-center justify-center">' + (o.thereafter || '-') + '</div>' +
+                        '</div>' +
+                        '<div class="grid grid-cols-2 border-b border-slate-300">' +
+                            '<div class="p-2 border-r border-slate-300 font-semibold text-slate-600 bg-slate-50 flex items-center">GBA Data</div>' +
+                            '<div class="p-2 text-center text-slate-700 flex items-center justify-center">' + (o.gbaData || '-') + '</div>' +
+                        '</div>' +
+                        '<div class="grid grid-cols-2 border-b border-slate-300">' +
+                            '<div class="p-2 border-r border-slate-300 font-semibold text-slate-600 bg-slate-50 flex items-center">Local voice</div>' +
+                            '<div class="p-2 text-center text-slate-700 flex items-center justify-center">' + o.localVoice + '</div>' +
+                        '</div>' +
+                        '<div class="grid grid-cols-2 border-b border-slate-300">' +
+                            '<div class="p-2 border-r border-slate-300 font-semibold text-slate-600 bg-slate-50 flex items-center">China Roaming voice</div>' +
+                            '<div class="p-2 text-center text-slate-700 flex items-center justify-center">' + (o.chinaVoice || '-') + '</div>' +
+                        '</div>' +
+                        '<div class="grid grid-cols-2 border-b border-slate-300">' +
+                            '<div class="p-2 border-r border-slate-300 font-semibold text-slate-600 bg-slate-50 flex items-center">VAS</div>' +
+                            '<div class="p-2 text-center text-slate-700 whitespace-pre-line flex items-center justify-center">' + (o.vas || '-') + '</div>' +
+                        '</div>' +
+                        '<div class="grid grid-cols-2 border-b border-slate-300">' +
+                            '<div class="p-2 border-r border-slate-300 font-semibold text-slate-600 bg-slate-50 flex items-center">Promo / Offer</div>' +
+                            '<div class="p-2 text-center text-slate-700 whitespace-pre-line flex items-center justify-center">' + (o.promo || '-') + '</div>' +
+                        '</div>' +
+                        '<div class="grid grid-cols-2 border-b border-slate-300">' +
+                            '<div class="p-2 border-r border-slate-300 font-semibold text-slate-600 bg-slate-50 flex items-center">Gift</div>' +
+                            '<div class="p-2 text-center text-slate-700 whitespace-pre-line flex items-center justify-center">' + (o.gift || '-') + '</div>' +
+                        '</div>' +
+                        '<div class="grid grid-cols-2 border-b border-slate-300">' +
+                            '<div class="p-2 border-r border-slate-300 font-semibold text-slate-600 bg-slate-50 flex items-center">Admin Fee</div>' +
+                            '<div class="p-2 text-center text-slate-700 flex items-center justify-center">' + (o.adminFee || '-') + '</div>' +
+                        '</div>' +
+                        '<div class="grid grid-cols-2">' +
+                            '<div class="p-2 border-r border-slate-300 font-semibold text-slate-600 bg-slate-50 flex items-center">Contract period</div>' +
+                            '<div class="p-2 text-center font-bold text-slate-900 flex items-center justify-center">' + (o.contract || '-') + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="p-4 bg-slate-50 border-t border-slate-100 flex gap-2 flex-wrap sm:flex-nowrap">' +
+                    '<button type="button" class="img-export-btn flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 shadow-sm whitespace-nowrap">' +
+                        '<i class="fa-solid fa-camera"></i> Image' +
+                    '</button>' +
+                    '<button type="button" class="csv-export-card-btn flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 shadow-sm whitespace-nowrap">' +
+                        '<i class="fa-solid fa-file-csv"></i> CSV' +
+                    '</button>' +
+                    '<button type="button" class="edit-offer-btn bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded-xl text-xs font-semibold transition" title="Edit">' +
+                        '<i class="fa-solid fa-pen"></i>' +
+                    '</button>' +
+                    '<button type="button" class="delete-offer-btn bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-2 rounded-xl text-xs font-semibold transition" title="Delete">' +
+                        '<i class="fa-solid fa-trash-can"></i>' +
+                    '</button>' +
+                '</div>';
+
+            setTimeout(function() {
+                const imgBtn = div.querySelector('.img-export-btn');
+                if(imgBtn) imgBtn.onclick = function() { exportCardAsImage(cardId, exportLabel); };
+
+                const csvCardBtn = div.querySelector('.csv-export-card-btn');
+                if(csvCardBtn) csvCardBtn.onclick = function() { exportCardAsCSV(o.id); };
+
+                const editBtn = div.querySelector('.edit-offer-btn');
+                if(editBtn) editBtn.onclick = function() { editOffer(o.id); };
+
+                const delBtn = div.querySelector('.delete-offer-btn');
+                if(delBtn) delBtn.onclick = function() { deleteOffer(o.id); };
+
+                const leftBtn = div.querySelector('.move-left-btn');
+                if(leftBtn) leftBtn.onclick = function() { moveOffer(o.id, -1); };
+
+                const rightBtn = div.querySelector('.move-right-btn');
+                if(rightBtn) rightBtn.onclick = function() { moveOffer(o.id, 1); };
+            }, 0);
+
+            return div;
+        }
+
+        function exportFileCSV(companyName, fileName) {
+            const fileOffers = offers.filter(function(o) { return o.company === companyName && o.fileGroup === fileName; });
+            if (fileOffers.length === 0) {
+                alert("No offers in this file to export.");
+                return;
+            }
+            generateMatrixCSV(fileOffers, companyName + '_' + fileName);
+        }
+
+        function exportCompanyCSV(companyName) {
+            const companyOffers = offers.filter(function(o) { return o.company === companyName; });
+            if (companyOffers.length === 0) {
+                alert("No offers available for this company to export.");
+                return;
+            }
+            generateMatrixCSV(companyOffers, companyName + '_all_offers');
+        }
+
+        function generateMatrixCSV(offerList, filenamePrefix) {
+            const metricRows = [
+                { label: "Original Plan Fee", key: "originalFee" },
+                { label: "Average Net plan Fee", key: "netFee", stripHtml: true },
+                { label: "Local Data Entitlement", key: "localData" },
+                { label: "Thereafter Local", key: "thereafter" },
+                { label: "GBA Data", key: "gbaData" },
+                { label: "Local voice", key: "localVoice" },
+                { label: "China Roaming voice", key: "chinaVoice" },
+                { label: "VAS", key: "vas", stripHtml: true },
+                { label: "Promo / Offer", key: "promo", stripHtml: true },
+                { label: "Gift", key: "gift", stripHtml: true },
+                { label: "Admin Fee", key: "adminFee" },
+                { label: "Contract period", key: "contract" }
+            ];
+
+            let rows = [];
+            metricRows.forEach(function(m) {
+                let rowData = [m.label];
+                offerList.forEach(function(o) {
+                    let val = o[m.key] || "";
+                    if (m.stripHtml) {
+                        val = val.replace(/<[^>]*>?/gm, '');
+                    }
+                    rowData.push(val);
+                });
+                rows.push(rowData);
+            });
+
+            let csvContent = "data:text/csv;charset=utf-8," + 
+                rows.map(function(e) { return e.map(function(val) { return '"' + String(val || "").replace(/"/g, '""') + '"'; }).join(","); }).join("\n");
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", filenamePrefix.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function exportCardAsCSV(id) {
+            const o = offers.find(function(item) { return item.id === id; });
+            if(!o) return;
+
+            let rows = [
+                ["Original Plan Fee", o.originalFee || ""],
+                ["Average Net plan Fee", (o.netFee || "").replace(/<[^>]*>?/gm, '')],
+                ["Local Data Entitlement", o.localData || ""],
+                ["Thereafter Local", o.thereafter || ""],
+                ["GBA Data", o.gbaData || ""],
+                ["Local voice", o.localVoice || ""],
+                ["China Roaming voice", o.chinaVoice || ""],
+                ["VAS", (o.vas || "").replace(/<[^>]*>?/gm, '')],
+                ["Promo / Offer", (o.promo || "").replace(/<[^>]*>?/gm, '')],
+                ["Gift", (o.gift || "").replace(/<[^>]*>?/gm, '')],
+                ["Admin Fee", o.adminFee || ""],
+                ["Contract period", o.contract || ""]
+            ];
+
+            let csvContent = "data:text/csv;charset=utf-8," + 
+                rows.map(function(e) { return e.map(function(val) { return '"' + String(val || "").replace(/"/g, '""') + '"'; }).join(","); }).join("\n");
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", o.company.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_' + o.localData + '_offer.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function exportCardAsImage(elementId, filenameLabel) {
+            const el = document.getElementById(elementId);
+            if(!el) return;
+            
+            html2canvas(el, { scale: 2, backgroundColor: '#ffffff' }).then(function(canvas) {
+                const link = document.createElement('a');
+                link.download = filenameLabel.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_offer.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(function(err) {
+                console.error("Image export error:", err);
+            });
+        }
+
+        // Manage Competitors Modal Logic
+        function openOperatorModal() {
+            renderOperatorList();
+            const modal = document.getElementById('operatorModal');
+            if(modal) modal.classList.remove('hidden');
+        }
+
+        function closeOperatorModal() {
+            const modal = document.getElementById('operatorModal');
+            if(modal) modal.classList.add('hidden');
+            renderNavTabs();
+            populateOperatorDropdown();
+        }
+
+        function renderOperatorList() {
+            const container = document.getElementById('operatorListContainer');
+            if(!container) return;
+            container.innerHTML = '';
+            operators.forEach(function(op, idx) {
+                const row = document.createElement('div');
+                row.className = "flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200 gap-2";
+                
+                const leftDiv = document.createElement('div');
+                leftDiv.className = "flex items-center gap-2 flex-1";
+
+                const select = document.createElement('select');
+                select.className = "bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-semibold focus:outline-none";
+                const colors = [
+                    {val: 'bg-red-500', name: 'Red'},
+                    {val: 'bg-yellow-400', name: 'Yellow'},
+                    {val: 'bg-sky-400', name: 'Light Blue'},
+                    {val: 'bg-indigo-600', name: 'Indigo'},
+                    {val: 'bg-pink-500', name: 'Pink'},
+                    {val: 'bg-orange-500', name: 'Orange'},
+                    {val: 'bg-emerald-500', name: 'Emerald'},
+                    {val: 'bg-purple-500', name: 'Purple'},
+                    {val: 'bg-slate-700', name: 'Dark Slate'}
+                ];
+                colors.forEach(function(c) {
+                    const opt = document.createElement('option');
+                    opt.value = c.val;
+                    opt.innerText = c.name;
+                    if(op.color === c.val) opt.selected = true;
+                    select.appendChild(opt);
+                });
+                select.onchange = function() { updateOperatorColor(idx, select.value); };
+
+                const dot = document.createElement('span');
+                dot.className = "w-3 h-3 rounded-full " + op.color + " inline-block shrink-0";
+
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = op.name;
+                input.className = "bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-800 flex-1 focus:outline-none";
+                input.onchange = function() { updateOperatorName(idx, input.value); };
+
+                leftDiv.appendChild(select);
+                leftDiv.appendChild(dot);
+                leftDiv.appendChild(input);
+
+                const delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.className = "text-slate-400 hover:text-rose-600 p-1.5 rounded-lg transition";
+                delBtn.title = "Delete Operator";
+                delBtn.innerHTML = '<i class="fa-solid fa-trash-can text-xs"></i>';
+                delBtn.onclick = function() { deleteOperator(idx); };
+
+                row.appendChild(leftDiv);
+                row.appendChild(delBtn);
+                container.appendChild(row);
+            });
+        }
+
+        function updateOperatorName(idx, newName) {
+            newName = newName.trim();
+            if (!newName) return;
+            const oldName = operators[idx].name;
+            operators[idx].name = newName;
+            offers.forEach(function(o) { if (o.company === oldName) o.company = newName; });
+            if (companyFileGroups[oldName]) {
+                companyFileGroups[newName] = companyFileGroups[oldName];
+                delete companyFileGroups[oldName];
+            }
+            if (activeTab === oldName) activeTab = newName;
+            syncStorage();
+            renderOperatorList();
+        }
+
+        function updateOperatorColor(idx, newColor) {
+            operators[idx].color = newColor;
+            syncStorage();
+            renderOperatorList();
+        }
+
+        function addNewOperator() {
+            const nameInput = document.getElementById('newOpName');
+            const colorSelect = document.getElementById('newOpColor');
+            if(!nameInput || !colorSelect) return;
+            const name = nameInput.value.trim();
+            const color = colorSelect.value;
+
+            if (!name) {
+                alert("Please enter a competitor name.");
+                return;
+            }
+            if (operators.some(function(o) { return o.name.toLowerCase() === name.toLowerCase(); })) {
+                alert("Competitor already exists.");
+                return;
+            }
+
+            operators.push({ name: name, color: color });
+            if (!companyFileGroups[name]) companyFileGroups[name] = [];
+            nameInput.value = '';
+            syncStorage();
+            renderOperatorList();
+        }
+
+        function deleteOperator(idx) {
+            if (operators.length <= 1) {
+                alert("You must keep at least one competitor.");
+                return;
+            }
+            const opName = operators[idx].name;
+            if (confirm('Delete competitor "' + opName + '"? All associated offers will also be removed.')) {
+                operators.splice(idx, 1);
+                offers = offers.filter(function(o) { return o.company !== opName; });
+                delete companyFileGroups[opName];
+                if (activeTab === opName) activeTab = 'overview';
+                syncStorage();
+                renderOperatorList();
+            }
+        }
+
+        function populateOperatorDropdown() {
+            const select = document.getElementById('inputCompany');
+            if(!select) return;
+            select.innerHTML = '';
+            operators.forEach(function(op) {
+                const opt = document.createElement('option');
+                opt.value = op.name;
+                opt.innerText = op.name;
+                select.appendChild(opt);
+            });
+        }
+
+        // File Group Modal Controls
+        function openFileModal() {
+            if (activeTab === 'overview') return;
+            const lbl = document.getElementById('fileModalCompanyLabel');
+            const inp = document.getElementById('newFileNameInput');
+            const modal = document.getElementById('fileModal');
+            if(lbl) lbl.innerText = activeTab;
+            if(inp) inp.value = '';
+            if(modal) modal.classList.remove('hidden');
+        }
+
+        function closeFileModal() {
+            const modal = document.getElementById('fileModal');
+            if(modal) modal.classList.add('hidden');
+        }
+
+        function createFileGroup(e) {
+            e.preventDefault();
+            const inp = document.getElementById('newFileNameInput');
+            if(!inp) return;
+            const name = inp.value.trim();
+            if (!name || activeTab === 'overview') return;
+
+            if (!companyFileGroups[activeTab]) companyFileGroups[activeTab] = [];
+            if (!companyFileGroups[activeTab].includes(name)) {
+                companyFileGroups[activeTab].push(name);
+            }
+            activeFileGroup = name;
+            closeFileModal();
+            renderCompanyWorkspace(activeTab);
+        }
+
+        function deleteFileGroup(companyName, fileName) {
+            if (!confirm('Delete file "' + fileName + '"? Any offers inside will remain under ' + companyName + ' without a file group.')) return;
+
+            offers.forEach(function(o) {
+                if (o.company === companyName && o.fileGroup === fileName) {
+                    o.fileGroup = "";
+                }
+            });
+            companyFileGroups[companyName] = (companyFileGroups[companyName] || []).filter(function(g) { return g !== fileName; });
+            activeFileGroup = 'ALL';
+            renderCompanyWorkspace(companyName);
+        }
+
+        function populateFileGroupDropdown() {
+            const select = document.getElementById('inputCompany');
+            const datalist = document.getElementById('fileGroupSuggestions');
+            if(!select || !datalist) return;
+            const selectedCompany = select.value;
+            datalist.innerHTML = '';
+            const groups = companyFileGroups[selectedCompany] || [];
+            groups.forEach(function(g) {
+                const opt = document.createElement('option');
+                opt.value = g;
+                datalist.appendChild(opt);
+            });
+        }
+
+        function openFormModal(id, defaultCompany, defaultFile) {
+            id = id || null;
+            defaultCompany = defaultCompany || null;
+            defaultFile = defaultFile || null;
+
+            const form = document.getElementById('offerForm');
+            if(form) form.reset();
+            const offerIdEl = document.getElementById('offerId');
+            if(offerIdEl) offerIdEl.value = '';
+            
+            populateOperatorDropdown();
+
+            const inputComp = document.getElementById('inputCompany');
+            if (defaultCompany && inputComp) {
+                inputComp.value = defaultCompany;
+            } else if (activeTab !== 'overview' && inputComp) {
+                inputComp.value = activeTab;
+            }
+            populateFileGroupDropdown();
+
+            const inputFileGrp = document.getElementById('inputFileGroup');
+            if (defaultFile && defaultFile !== 'ALL' && inputFileGrp) {
+                inputFileGrp.value = defaultFile;
+            } else if(inputFileGrp) {
+                inputFileGrp.value = '';
+            }
+
+            const modalTitle = document.getElementById('modalTitle');
+            if (id) {
+                const o = offers.find(function(item) { return item.id === id; });
+                if (o) {
+                    if(modalTitle) modalTitle.innerHTML = '<i class="fa-solid fa-pen-to-square text-indigo-600"></i> Edit Telecommunications Offer';
+                    if(offerIdEl) offerIdEl.value = o.id;
+                    if(inputComp) inputComp.value = o.company;
+                    populateFileGroupDropdown();
+                    if(inputFileGrp) inputFileGrp.value = o.fileGroup || '';
+                    const setVal = function(elId, val) { const el = document.getElementById(elId); if(el) el.value = val || ''; };
+                    setVal('inputOriginalFee', o.originalFee);
+                    setVal('inputNetFee', o.netFee);
+                    setVal('inputContract', o.contract);
+                    setVal('inputLocalData', o.localData);
+                    setVal('inputThereafter', o.thereafter);
+                    setVal('inputGbaData', o.gbaData);
+                    setVal('inputLocalVoice', o.localVoice);
+                    setVal('inputChinaVoice', o.chinaVoice);
+                    setVal('inputVas', o.vas);
+                    setVal('inputPromo', o.promo);
+                    setVal('inputGift', o.gift);
+                    setVal('inputAdminFee', o.adminFee);
+                }
+            } else {
+                if(modalTitle) modalTitle.innerHTML = '<i class="fa-solid fa-circle-plus text-indigo-600"></i> Add Telecommunications Offer';
+            }
+            const modal = document.getElementById('offerModal');
+            if(modal) modal.classList.remove('hidden');
+        }
+
+        function openFormModalForCompany() {
+            if (activeTab !== 'overview') {
+                openFormModal(null, activeTab, activeFileGroup);
+            } else {
+                openFormModal();
+            }
+        }
+
+        function closeFormModal() {
+            const modal = document.getElementById('offerModal');
+            if(modal) modal.classList.add('hidden');
+        }
+
+        function saveOffer(e) {
+            e.preventDefault();
+            const offerIdEl = document.getElementById('offerId');
+            const inputFileGrp = document.getElementById('inputFileGroup');
+            const inputComp = document.getElementById('inputCompany');
+            
+            const id = offerIdEl ? offerIdEl.value : '';
+            const fileGrp = inputFileGrp ? inputFileGrp.value.trim() : '';
+
+            const getVal = function(elId) { const el = document.getElementById(elId); return el ? el.value : ''; };
+
+            const newObj = {
+                id: id ? Number(id) : Date.now(),
+                company: inputComp ? inputComp.value : operators[0].name,
+                fileGroup: fileGrp,
+                originalFee: getVal('inputOriginalFee'),
+                netFee: getVal('inputNetFee'),
+                contract: getVal('inputContract'),
+                localData: getVal('inputLocalData'),
+                thereafter: getVal('inputThereafter'),
+                gbaData: getVal('inputGbaData'),
+                localVoice: getVal('inputLocalVoice'),
+                chinaVoice: getVal('inputChinaVoice'),
+                vas: getVal('inputVas'),
+                promo: getVal('inputPromo'),
+                gift: getVal('inputGift'),
+                adminFee: getVal('inputAdminFee')
+            };
+
+            if (id) {
+                const idx = offers.findIndex(function(item) { return item.id === Number(id); });
+                if (idx !== -1) offers[idx] = newObj;
+            } else {
+                offers.unshift(newObj);
+            }
+
+            closeFormModal();
+            if (activeTab === 'overview') {
+                renderApp();
+            } else {
+                renderCompanyWorkspace(activeTab);
+            }
+        }
+
+        function editOffer(id) {
+            openFormModal(id);
+        }
+
+        function deleteOffer(id) {
+            if (confirm("Are you sure you want to delete this offer?")) {
+                offers = offers.filter(function(item) { return item.id !== id; });
+                if (activeTab === 'overview') {
+                    renderApp();
+                } else {
+                    renderCompanyWorkspace(activeTab);
+                }
+            }
+        }
+
+        function downloadHTMLFile() {
+            const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'index.html';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', function() {
+            renderNavTabs();
+            renderApp();
+        });
+    </script>
+</body>
+</html>
